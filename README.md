@@ -1,4 +1,9 @@
-# webpack多配置
+# 页面布局说明
+- 配置文件在config文件夹；
+- 入口文件在src文件夹，src目录下的每个文件夹对应一个页面（除了images文件夹以外），html css js都是以index命名；
+- 打包输出文件到dist文件夹；
+
+## webpack多配置
 - 基础配置：webpack.base.js
 - 开发环境：webpack.dev.js
 - 生产环境：webpack.prod.js
@@ -39,8 +44,34 @@
     ```
 不管有没有在.eslintignore中进行配置，eslint都会默认忽略掉对/node_modules/** 的检查
 
+## babel配置
+
+配置.babelrc文件:一个plugins对应一个功能，presets是多个plugins功能的集合.
+```js
+{
+    "presets": [
+        [
+            "@babel/preset-env",//将js目前最新语法转为ES5
+            {
+                "corejs": "3",
+                "useBuiltIns": "usage"
+            }
+        ]
+    ],
+    "plugins": []
+}
+```
+安装依赖包@bable/core @babel/preset-env core-js@3，并在webpack配置babel-loader。
+说明：@babel/preset-env在默认情况下只编译语法，不会对新方法和新的原生对象进行转译，如 Array.includes，Map，Set 等，这些需要通过 Polyfill 来解决，需要安装@babel/polyfill，通过import '@babel/polyfill';在js中直接引入，通过这种方式引入，会将整个@babel/polyfill引入导致包体积变大。
+优化方案：@babel/preset-env的配置项中提供了useBuiltIns参数，在配置@babel/preset-env时配置useBuiltIns，Babel在编译的时候就会自动进行 Polyfill。
+useBuiltIns参数：
+- false：不对Polyfill做操作
+- usage: 根据配置的浏览器兼容性，以及你代码中使用到的 API 来进行 Polyfill ，实现按需加载
+- entry: 功能和usage一样，不过需要在文件入口import'@babel/polyfill'
+[复用辅助函数优化](https://juejin.im/post/5e5b488af265da574112089f#heading-11)
+
 ## 遇到的问题
-- 使用webpack-dev-server每次修改文件之后浏览器不自动刷新
+1. 使用webpack-dev-server每次修改文件之后浏览器不自动刷新
     解决方法：修改devServer配置
     ```js
     devServer: {
@@ -50,7 +81,7 @@
         watchContentBase: true,
     },
     ```
-- webpack处理html中的图片问题
+2. webpack处理html中的图片问题
     配置html-loader和url-loader
     ```js
     {
@@ -76,6 +107,16 @@
         }
     }
     ```
+## 构建速度和体积优化策略
+### 速度分析
+使用speed-measure-webpack-plugin
+### 体积分析
+使用webpack-bundle-analyzer
+### 优化体积
+treeShaking去除无用的js和css
+- mode设置为production可以自动去除无用js
+- [purgecss-webpack-plugin](https://github.com/FullHuman/purgecss/tree/master/packages/purgecss-webpack-plugin)可以去除无用的css，该插件要与mini-css-extract-plugin配合使用
+
 
 
 
